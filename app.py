@@ -1,7 +1,6 @@
 import cohere
 import json
-import pandas as pd
-from datetime import datetime
+import os
 import streamlit as st
 
 # Function to load API key from config file
@@ -29,33 +28,11 @@ def fetch_real_time_data(co, query):
         connectors=[{"id":"web-search"}]
     )
     
-    results = []
+    response = ""
     for event in stream:
         if event.event_type == "text-generation":
-            results.append(event.text)
-            print(event.text, end='')
-    return results
-
-# Function to save results to a JSON file
-def save_results_to_file(results, filename):
-    with open(filename, 'w') as f:
-        json.dump(results, f, indent=4)
-
-# Function to preprocess and analyze results
-def preprocess_and_analyze_results(filename):
-    with open(filename, 'r') as f:
-        data = json.load(f)
-
-    # Example: Convert data to a pandas DataFrame
-    df = pd.DataFrame(data, columns=['text'])
-    df['timestamp'] = datetime.now()
-    
-    # Display the DataFrame
-    st.write(df)
-
-    # Save DataFrame to a CSV file
-    df.to_csv('ai_chat.csv', index=False)
-    st.write("Results saved to ai_chat.csv")
+            response += event.text
+    return response
 
 # Streamlit app
 def main():
@@ -64,16 +41,27 @@ def main():
     # Initialize Cohere client
     co = initialize_cohere_client()
 
+
     # Input field for the query
     query = st.text_input("Enter your query:", "What is the latest news about AI?")
     
+    # Chat history to maintain the state of the conversation
+    if 'chat_history' not in st.session_state:
+        st.session_state.chat_history = []
+
     # Button to fetch results
-    if st.button("Fetch Result"):
-        with st.spinner("Fetching result..."):
-            results = fetch_real_time_data(co, query)
-            filename = f'ai_chat_{datetime.now().strftime("%Y%m%d%H%M%S")}.json'
-            save_results_to_file(results, filename)
-            preprocess_and_analyze_results(filename)
+    if st.button("Send"):
+        if query:
+            with st.spinner("Fetching news..."):
+                response = fetch_real_time_data(co, query)
+                # Add user query and response to chat history
+                st.session_state.chat_history.append({"user": query, "bot": response})
+
+    # Display chat history
+    if st.session_state.chat_history:
+        for chat in st.session_state.chat_history:
+            st.write(f"**You:** {chat['user']}")
+            st.write(f"**Bot:** {chat['bot']}")
 
 if __name__ == "__main__":
     main()
