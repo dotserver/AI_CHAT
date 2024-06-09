@@ -1,67 +1,45 @@
+import streamlit as st
 import cohere
 import json
-import os
-import streamlit as st
-
-# Function to load API key from config file
-def load_api_key_from_config():
-    with open('config.json', 'r') as f:
-        config = json.load(f)
-    return config.get('COHERE_API_KEY')
 
 # Function to initialize the Cohere client
 def initialize_cohere_client():
-    api_key = load_api_key_from_config()
+    api_key = st.secrets["COHERE_API_KEY"]
     if not api_key:
-        raise ValueError("Cohere API key not found in config file.")
+        raise ValueError("Cohere API key not found in secrets.")
     co = cohere.Client(api_key)
     return co
 
-# Function to fetch real-time data using Cohere chat stream
-def fetch_real_time_data(co, query):
-    stream = co.chat_stream(
-        model='command-r-plus',
-        message=query,
-        temperature=0.3,
-        chat_history=[],
-        prompt_truncation='AUTO',
-        connectors=[{"id":"web-search"}]
-    )
-    
-    response = ""
-    for event in stream:
-        if event.event_type == "text-generation":
-            response += event.text
-    return response
-
-# Streamlit app
 def main():
     st.title("AI Chatbot")
-    
+
     # Initialize Cohere client
     co = initialize_cohere_client()
 
-
     # Input field for the query
-    query = st.text_input("Enter your query:", "What is the latest news about AI?")
-    
-    # Chat history to maintain the state of the conversation
-    if 'chat_history' not in st.session_state:
+    user_query = st.text_input("Enter your query:")
+
+    # Chat history
+    if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
 
-    # Button to fetch results
-    if st.button("Send"):
-        if query:
-            with st.spinner("Fetching news..."):
-                response = fetch_real_time_data(co, query)
-                # Add user query and response to chat history
-                st.session_state.chat_history.append({"user": query, "bot": response})
+    if user_query:
+        with st.spinner("Fetching response..."):
+            response = co.chat(
+                message=user_query,
+                model='command-r-plus',
+                temperature=0.3,
+                chat_history=st.session_state.chat_history,
+                prompt_truncation='AUTO',
+                connectors=[{"id":"web-search"}]
+            )
+            st.session_state.chat_history.append({"user": user_query, "bot": response.generations[0].text})
+            user_query = ""
 
     # Display chat history
-    if st.session_state.chat_history:
-        for chat in st.session_state.chat_history:
-            st.write(f"**You:** {chat['user']}")
-            st.write(f"**Bot:** {chat['bot']}")
+    for chat in st.session_state.chat_history:
+        st.write(f"**You:** {chat['user']}")
+        st.write(f"**Bot:** {chat['bot']}")
 
 if __name__ == "__main__":
     main()
