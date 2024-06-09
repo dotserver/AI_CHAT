@@ -21,7 +21,7 @@ def main():
 
     # Input field for the query within a form
     with st.form(key='query_form'):
-        user_query = st.text_input("Enter your query:")
+        user_query = st.text_input("Enter your query:", "What is the latest news about AI?")
         submit_button = st.form_submit_button(label='Send')
 
     if submit_button and user_query:
