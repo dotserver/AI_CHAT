@@ -25,17 +25,26 @@ def main():
         submit_button = st.form_submit_button(label='Send')
 
     if submit_button and user_query:
-        with st.spinner("Fetching response..."):
-            response = co.chat(
-                message=user_query,
-                model='command-r-plus',
-                temperature=0.3,
-                chat_history=st.session_state.chat_history,
-                prompt_truncation='AUTO',
-                connectors=[{"id":"web-search"}]
-            )
-            st.session_state.chat_history.append({"user": user_query, "bot": response.generations[0].text})
-            user_query = ""
+        try:
+            with st.spinner("Fetching response..."):
+                response = co.chat(
+                    message=user_query,
+                    model='command-r-plus',
+                    temperature=0.3,
+                    chat_history=st.session_state.chat_history,
+                    prompt_truncation='AUTO',
+                    connectors=[{"id": "web-search"}]
+                )
+                # Log the response to understand its structure
+                st.write("Response from Cohere API:", response)
+
+                # Assuming the response object has the expected structure
+                bot_response = response.generations[0].text
+                st.session_state.chat_history.append({"user": user_query, "bot": bot_response})
+                user_query = ""
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
+            st.write("Full response object:", response)
 
     # Display chat history
     for chat in st.session_state.chat_history:
