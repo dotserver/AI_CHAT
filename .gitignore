@@ -1,0 +1,19 @@
+# Virtual environment directory
+ai_venv/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Config file with API keys
+config.json
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# VS Code settings (optional, if you want to exclude VS Code settings)
+.vscode/
+
+# MacOS specific files
+.DS_Store
+
