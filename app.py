@@ -1,6 +1,5 @@
 import streamlit as st
 import cohere
-import json
 
 # Function to initialize the Cohere client
 def initialize_cohere_client():
@@ -16,14 +15,16 @@ def main():
     # Initialize Cohere client
     co = initialize_cohere_client()
 
-    # Input field for the query
-    user_query = st.text_input("Enter your query:")
-
     # Chat history
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
 
-    if user_query:
+    # Input field for the query within a form
+    with st.form(key='query_form'):
+        user_query = st.text_input("Enter your query:")
+        submit_button = st.form_submit_button(label='Send')
+
+    if submit_button and user_query:
         with st.spinner("Fetching response..."):
             response = co.chat(
                 message=user_query,
