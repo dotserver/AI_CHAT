@@ -31,7 +31,7 @@ def fetch_real_time_data(co, query):
 
 # Streamlit app
 def main():
-    st.title("AI News Chatbot")
+    st.title("AI Chatbot")
     
     # Initialize Cohere client
     co = initialize_cohere_client()
