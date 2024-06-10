@@ -8,3 +8,6 @@ AI Query Chatbot is a Streamlit-based web application that leverages the Cohere 
 - **Interactive chat interface**: Users can interact with the chatbot in real-time.
 - **Persistent chat history**: Maintains a session-based chat history for user queries and responses.
 
+## Deployment
+
+This app is deployed and available at: [AI Chatbot on Streamlit](https://ai-chat-dotserver.streamlit.app/)
